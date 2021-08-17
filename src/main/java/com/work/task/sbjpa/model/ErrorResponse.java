@@ -1,24 +1,22 @@
-package com.work.task.sbjpa.dto;
+package com.work.task.sbjpa.model;
 
-public class Response {
+import java.util.List;
+import java.math.BigInteger;
+
+import javax.persistence.*;
+
+public class ErrorResponse {
 
 	private String message;
 	private boolean status;
 	private Object data;
 
-	public Response(String message, boolean status, Object data) {
+	public ErrorResponse(String message, boolean status, Object data) {
 		super();
 		this.message = message;
 		this.status = status;
 		this.data = data;
 	}
-	
-
-	public Response(String message) {
-		super();
-		this.message = message;
-	}
-
 
 	public String getMessage() {
 		return message;
@@ -44,7 +42,7 @@ public class Response {
 		this.data = data;
 	}
 
-	public Response() {
+	public ErrorResponse() {
 		super();
 	}
 
