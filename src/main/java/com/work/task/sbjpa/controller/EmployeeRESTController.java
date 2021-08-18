@@ -4,6 +4,8 @@ package com.work.task.sbjpa.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,10 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 import com.work.task.sbjpa.dto.EmployeeDto;
 import com.work.task.sbjpa.dto.Response;
 import com.work.task.sbjpa.exception.RecordNotInsertedException;
-import com.work.task.sbjpa.model.Employee;
+import com.work.task.sbjpa.model.*;
 import com.work.task.sbjpa.repository.EmployeeRepository;
-import com.work.task.sbjpa.service.EmployeeService;
+import com.work.task.sbjpa.service.EmployeeServiceTest;
+import com.work.task.sbjpa.service.OrganizationService;
+import com.work.task.sbjpa.service.impl.InvalidInsuranceAmountException;
 import com.work.task.sbjpa.util.Constants;
+
 
 @RestController
 @RequestMapping("/api")
@@ -28,7 +33,11 @@ public class EmployeeRESTController {
 	@Autowired
 	private EmployeeRepository employeeRepository;
 	@Autowired
-	private EmployeeService employeeService;
+	private EmployeeServiceTest employeeServiceTest;
+	
+	@Autowired
+	private OrganizationService organizationService ;
+
 	String methodName = "";
 	static final String CLASS_NAME = "EmployeeRESTController";
 	Logger logger = LoggerFactory.getLogger(EmployeeRESTController.class);
@@ -58,12 +67,12 @@ public class EmployeeRESTController {
 						HttpStatus.EXPECTATION_FAILED);	
 			}
 
-	  Employee emp = employeeService.addEmployee(employee); 
+	  EmployeeTest emp = employeeServiceTest.addEmployee(employee); 
 	  
-	  return new ResponseEntity<>(new Response("Employee Details Saved", Constants.TRUE, emp),
+	  return new ResponseEntity<>(new Response("EmployeeTest Details Saved", Constants.TRUE, emp),
 				HttpStatus.CREATED);
 	 }catch(Exception e) {
-			return new ResponseEntity<>(new Response("Employee Details not Saved"+e.getMessage(), Constants.FALSE, ""),
+			return new ResponseEntity<>(new Response("EmployeeTest Details not Saved"+e.getMessage(), Constants.FALSE, ""),
 					HttpStatus.NOT_MODIFIED);		 
 	 }
   }
@@ -75,16 +84,16 @@ public class EmployeeRESTController {
 		try {
 			methodName = "getEmployeeById";
 			logger.info(CLASS_NAME + " :: " + methodName + " :: " + "started");
-			Employee employee = employeeRepository.getEmployeeById(id);
+			EmployeeTest employee = employeeRepository.getEmployeeById(id);
 			logger.info(CLASS_NAME + " :: " + methodName + " :: " + " Ended");
 			if (employee != null) {
 				return new ResponseEntity<>(new Response("Data Found", Constants.TRUE, employee), HttpStatus.FOUND);
 			} else {
-				return new ResponseEntity<>(new Response("Employee Details not found", Constants.FALSE, ""),
+				return new ResponseEntity<>(new Response("EmployeeTest Details not found", Constants.FALSE, ""),
 						HttpStatus.NOT_FOUND);
 			}
 		} catch (Exception e) {
-			return new ResponseEntity<>(new Response("Employee Details not found", Constants.FALSE, ""),
+			return new ResponseEntity<>(new Response("EmployeeTest Details not found", Constants.FALSE, ""),
 					HttpStatus.NOT_FOUND);
 		}
 
@@ -96,14 +105,14 @@ public class EmployeeRESTController {
 		try {
 			methodName = "getEmployeeById";
 			logger.info(CLASS_NAME + " :: " + methodName + " :: " + "started");
-			Employee employee = employeeRepository.getEmployeeByName(name);
+			EmployeeTest employee = employeeRepository.getEmployeeByName(name);
 			logger.info(CLASS_NAME + " :: " + methodName + " :: " + " Ended"+employee.getDisplayName().charAt(0));
 
-			return new ResponseEntity<>(new Response("Employee Details found ", Constants.TRUE, employee),
+			return new ResponseEntity<>(new Response("EmployeeTest Details found ", Constants.TRUE, employee),
 						HttpStatus.FOUND);
 
 		} catch (NullPointerException  e) {
-			return new ResponseEntity<>(new Response("Employee not found", Constants.FALSE, e.getCause()),
+			return new ResponseEntity<>(new Response("EmployeeTest not found", Constants.FALSE, e.getCause()),
 					HttpStatus.NOT_FOUND);
 		}
 
@@ -113,16 +122,71 @@ public class EmployeeRESTController {
     public ResponseEntity<Response> removeUser(@PathVariable(value = "id") Long id){
     	try {
     		System.out.println("removeUser>>>>"+id);
-    	 Employee user =this.employeeRepository.findById(id).orElseThrow();
+    	 EmployeeTest user =this.employeeRepository.findById(id).orElseThrow();
        
         this.employeeRepository.delete(user);
-        return new ResponseEntity<>(new Response("Employee Record Deleted ", Constants.TRUE, id),
+        return new ResponseEntity<>(new Response("EmployeeTest Record Deleted ", Constants.TRUE, id),
 				HttpStatus.FOUND);
-    } catch (NullPointerException  e) {
-		return new ResponseEntity<>(new Response("Employee Record not found", Constants.FALSE, e.getCause()),
-				HttpStatus.NOT_FOUND);
-	}
+	    } catch (NullPointerException  e) {
+			return new ResponseEntity<>(new Response("EmployeeTest Record not found", Constants.FALSE, e.getCause()),
+					HttpStatus.NOT_FOUND);
+		}
 
     }
+    
+    @PostMapping(value = "/employeesbytrn") 
+    public  ResponseEntity<Response>  addEmployeeTrn (@RequestBody EmployeeDto employee) {
+    	
+    	try {
+    		   employeeServiceTest.addEmployeeByTransaction(employee); 
+    		   
+    		   
+    		  
+    		  return new ResponseEntity<>(new Response("EmployeeTest Details Saved", Constants.TRUE, ""),
+    					HttpStatus.CREATED);
+    		 }catch(Exception e) {
+    				return new ResponseEntity<>(new Response("EmployeeTest Details not Saved"+e.getMessage(), Constants.FALSE, ""),
+    						HttpStatus.NOT_MODIFIED);		 
+    		 }
+    	
+    }
+    
+    @PostMapping(value = "/employeesbytrnErr") 
+    public  ResponseEntity<Response>  addEmployeeTrnErr (@RequestBody EmployeeDto employee) {
+    	
+    	try {
+    		   employeeServiceTest.addEmployeeByTransaction(employee); 
+    		   
+    		  
+    		  return new ResponseEntity<>(new Response("EmployeeTest Details Saved", Constants.TRUE, ""),
+    					HttpStatus.CREATED);
+    		 }catch(Exception e) {
+    				return new ResponseEntity<>(new Response("EmployeeTest Details not Saved"+e.getMessage(), Constants.FALSE, ""),
+    						HttpStatus.NOT_MODIFIED);		 
+    		 }
+    	
+    }
+    
+    @PostMapping(value = "/empTrn") 
+    public  ResponseEntity<Response>  trnPropagation (@RequestBody EmployeeDto employee) throws InvalidInsuranceAmountException{
+
+		Employee emp = new Employee();
+		emp.setEmpId(employee.getEmpId());
+		emp.setEmpName(employee.getEmpName());
+
+		EmployeeHealthInsurance employeeHealthInsurance = new EmployeeHealthInsurance();
+		employeeHealthInsurance.setEmpId(employee.getEmpId());
+		employeeHealthInsurance.setHealthInsuranceSchemeName(employee.getHealthInsuranceSchemeName());
+		employeeHealthInsurance.setCoverageAmount(employee.getCoverageAmount());
+		String propagation = employee.getPropagation();
+		if(employee.getPropagation().isEmpty()) propagation="Null";
+
+		organizationService.joinOrganization(emp, employeeHealthInsurance, propagation);
+		
+		 return new ResponseEntity<>(new Response("EmployeeTest Details Saved", Constants.TRUE, ""),
+					HttpStatus.CREATED);
+
+	}
+    
     
 }
