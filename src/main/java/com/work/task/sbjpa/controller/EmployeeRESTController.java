@@ -47,20 +47,10 @@ public class EmployeeRESTController {
   public  ResponseEntity<Response>  addEmployee (@RequestBody EmployeeDto employee) {
 	  System.out.println("addEmployee::::"+employee.getDisplayName());
 	 try {
-			if(employee.getFirstName().length()<4) {
+			if(employee.getFirstName().length()<4||employee.getLastName().length()<4||employee.getDisplayName().length()<4) {
 
-				return new ResponseEntity<>(new Response("Please Fill the Firstname  atleast 4 Char", Constants.FALSE, employee.getFirstName()),
+				return new ResponseEntity<>(new Response("Please Fill the Name Fields  atleast 4 Char", Constants.FALSE, ""),
 							HttpStatus.EXPECTATION_FAILED);
-			}
-			if(employee.getLastName().length()<4){
-
-				  return new ResponseEntity<>(new Response("Please Fill the Lastname  atleast 4 Char", Constants.FALSE, employee.getLastName()),
-						HttpStatus.EXPECTATION_FAILED);	
-			}
-			if(employee.getDisplayName().length()<8){
-
-				  return new ResponseEntity<>(new Response("Please Fill the DisplayName  atleast 8 Char", Constants.FALSE, employee.getDisplayName()),
-						HttpStatus.EXPECTATION_FAILED);	
 			}
 			if(!(employee.getEmail().contains("@")&&employee.getEmail().contains(".com"))){
 				  return new ResponseEntity<>(new Response("Mail shoud be in xxxxxx@xxx.com format", Constants.FALSE, employee.getEmail()),
@@ -87,11 +77,10 @@ public class EmployeeRESTController {
 			EmployeeTest employee = employeeRepository.getEmployeeById(id);
 			logger.info(CLASS_NAME + " :: " + methodName + " :: " + " Ended");
 			if (employee != null) {
-				return new ResponseEntity<>(new Response("Data Found", Constants.TRUE, employee), HttpStatus.FOUND);
-			} else {
-				return new ResponseEntity<>(new Response("EmployeeTest Details not found", Constants.FALSE, ""),
-						HttpStatus.NOT_FOUND);
-			}
+				return new ResponseEntity<>(new Response("Data Found", Constants.TRUE, employee), HttpStatus.ACCEPTED);
+			} 
+				throw new Exception("Not Found");
+			
 		} catch (Exception e) {
 			return new ResponseEntity<>(new Response("EmployeeTest Details not found", Constants.FALSE, ""),
 					HttpStatus.NOT_FOUND);
@@ -118,29 +107,15 @@ public class EmployeeRESTController {
 
 	}
 	
-    @DeleteMapping("deleteemployee/{id}")
-    public ResponseEntity<Response> removeUser(@PathVariable(value = "id") Long id){
-    	try {
-    		System.out.println("removeUser>>>>"+id);
-    	 EmployeeTest user =this.employeeRepository.findById(id).orElseThrow();
-       
-        this.employeeRepository.delete(user);
-        return new ResponseEntity<>(new Response("EmployeeTest Record Deleted ", Constants.TRUE, id),
-				HttpStatus.FOUND);
-	    } catch (NullPointerException  e) {
-			return new ResponseEntity<>(new Response("EmployeeTest Record not found", Constants.FALSE, e.getCause()),
-					HttpStatus.NOT_FOUND);
-		}
-
-    }
+ 
     
     @PostMapping(value = "/employeesbytrn") 
     public  ResponseEntity<Response>  addEmployeeTrn (@RequestBody EmployeeDto employee) {
     	
     	try {
     		   employeeServiceTest.addEmployeeByTransaction(employee); 
-    		   
-    		   
+    		   if(employee.getDisplayName().equalsIgnoreCase("test"))
+    			   throw new Exception("Not Found");
     		  
     		  return new ResponseEntity<>(new Response("EmployeeTest Details Saved", Constants.TRUE, ""),
     					HttpStatus.CREATED);
@@ -151,21 +126,6 @@ public class EmployeeRESTController {
     	
     }
     
-    @PostMapping(value = "/employeesbytrnErr") 
-    public  ResponseEntity<Response>  addEmployeeTrnErr (@RequestBody EmployeeDto employee) {
-    	
-    	try {
-    		   employeeServiceTest.addEmployeeByTransaction(employee); 
-    		   
-    		  
-    		  return new ResponseEntity<>(new Response("EmployeeTest Details Saved", Constants.TRUE, ""),
-    					HttpStatus.CREATED);
-    		 }catch(Exception e) {
-    				return new ResponseEntity<>(new Response("EmployeeTest Details not Saved"+e.getMessage(), Constants.FALSE, ""),
-    						HttpStatus.NOT_MODIFIED);		 
-    		 }
-    	
-    }
     
     @PostMapping(value = "/empTrn") 
     public  ResponseEntity<Response>  trnPropagation (@RequestBody EmployeeDto employee) throws InvalidInsuranceAmountException{
